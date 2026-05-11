@@ -2,12 +2,19 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   min-height: 100vh;
   margin: 0;
   background: #131418;
   color: #babdc4;
   font-family: monospace;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 pre {
@@ -20,10 +27,21 @@ p {
 }
 
 footer {
-  position: fixed;
-  bottom: 1rem;
+  margin-top: auto;
+  padding: 1rem;
   font-size: 0.75rem;
   opacity: 0.6;
+  line-height: 1.625;
+  text-align: center;
+}
+
+footer a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+footer a:hover {
+  color: #77a8fd;
 }
 
 #files {
@@ -67,8 +85,8 @@ footer {
 }
 
 .card svg {
-  width: 48px;
-  height: 48px;
+  width: 32px;
+  height: 32px;
 }
 
 .card span {

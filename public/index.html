@@ -6,14 +6,15 @@
     <link rel="stylesheet" href="/style.css">
   </head>
   <body>
-    <pre>
+    <main>
+      <pre>
              _
   ___  ___  (_)__  ___
  / _ \/ _ \/ / _ \/ -_)
 /_//_/ .__/_/ .__/\__/
     /_/    /_/         </pre>
-    <p>share files on your network</p>
-    <div id="files">
+      <p>share files on your network</p>
+      <div id="files">
       <div id="upload" class="card">
         <label for="f">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -26,7 +27,11 @@
         <input type="file" id="f">
       </div>
     </div>
-    <footer>you are: __CLIENT_IP__</footer>
+    </main>
+    <footer>
+      <div>you are: __CLIENT_IP__</div>
+      <div>running <a href="https://github.com/ekzyis/npipe/commit/__COMMIT__" target="_blank">__COMMIT__</a></div>
+    </footer>
     <script src="/app.js"></script>
   </body>
 </html>

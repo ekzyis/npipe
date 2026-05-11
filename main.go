@@ -10,9 +10,20 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/exec"
 	"strings"
 	"sync"
 )
+
+var commit = getCommit()
+
+func getCommit() string {
+	out, err := exec.Command("git", "rev-parse", "--short", "HEAD").Output()
+	if err != nil {
+		return "dev"
+	}
+	return strings.TrimSpace(string(out))
+}
 
 //go:embed public/index.html
 var indexHTML string
@@ -100,6 +111,7 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		ip := getClientIP(r)
 		html := strings.Replace(indexHTML, "__CLIENT_IP__", ip, 1)
+		html = strings.ReplaceAll(html, "__COMMIT__", commit)
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(html))
 	})
