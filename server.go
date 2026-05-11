@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"os/exec"
@@ -99,8 +100,9 @@ func setupRoutes() {
 			http.Error(w, "Bad request", http.StatusBadRequest)
 			return
 		}
-		store.Add(ip, req.Name, req.Data)
+		id := store.Add(ip, req.Name, req.Data)
 		w.Write([]byte("OK"))
+		log.Printf("%s uploaded %s (%d bytes)", ip, id, len(req.Data))
 	})
 
 	http.HandleFunc("/file/", func(w http.ResponseWriter, r *http.Request) {
@@ -110,6 +112,7 @@ func setupRoutes() {
 		if r.Method == "DELETE" {
 			if store.Delete(ip, id) {
 				w.WriteHeader(http.StatusNoContent)
+				log.Printf("%s deleted %s", ip, id)
 			} else {
 				http.NotFound(w, r)
 			}
@@ -124,6 +127,7 @@ func setupRoutes() {
 		w.Header().Set("Content-Type", "application/octet-stream")
 		w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, file.Name))
 		w.Write(file.Data)
+		log.Printf("%s downloaded %s (%d bytes)", ip, id, len(file.Data))
 	})
 }
 

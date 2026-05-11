@@ -65,6 +65,7 @@ function setupUpload() {
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) {
           const progress = (e.loaded / e.total) * 100;
+          console.log("uploading:", progress.toFixed(1) + "%");
           upload.style.setProperty("--progress", progress);
         }
       };
