@@ -5,6 +5,11 @@ const icons = {
       <polyline points="17 8 12 3 7 8"/>
       <line x1="12" y1="3" x2="12" y2="15"/>
     </svg>`,
+  spinner: `
+    <svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
+      <path d="M12 2a10 10 0 0 1 10 10"/>
+    </svg>`,
   check: `
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <polyline points="20 6 9 17 4 12"/>
@@ -25,6 +30,13 @@ function setupUpload() {
 
     reader.onload = () => {
       const data = Array.from(new Uint8Array(reader.result));
+      const label = document.querySelector("#upload label");
+      const origHTML = label.innerHTML;
+
+      label.innerHTML = `
+        ${icons.spinner}
+        <span>uploading</span>
+      `;
 
       fetch("/file", {
         method: "POST",
@@ -33,8 +45,6 @@ function setupUpload() {
         if (res.ok) {
           pollFiles();
           document.getElementById("f").value = "";
-          const label = document.querySelector("#upload label");
-          const origHTML = label.innerHTML;
           label.innerHTML = `
             <span class="success">${icons.check}</span>
             <span class="success">uploaded</span>

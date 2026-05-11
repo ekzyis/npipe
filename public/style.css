@@ -89,6 +89,14 @@ input[type="file"] {
   to { opacity: 1; }
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
 .file {
   animation: fadeIn 0.3s ease-in;
   padding: 0.5rem;
