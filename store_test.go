@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 func TestAdd(t *testing.T) {
 	store := &FileStore{files: make(map[string]map[string]*File)}
@@ -107,5 +110,33 @@ func TestDeleteNotFound(t *testing.T) {
 	ok := store.Delete("192.168.1.1", "nonexistent")
 	if ok {
 		t.Fatal("expected delete to fail for nonexistent file")
+	}
+}
+
+func TestExpiry(t *testing.T) {
+	store := &FileStore{files: make(map[string]map[string]*File)}
+
+	// add file with old timestamp
+	store.files["192.168.1.1"] = make(map[string]*File)
+	store.files["192.168.1.1"]["oldfile"] = &File{
+		ID:        "oldfile",
+		Name:      "old.txt",
+		Data:      []byte("old"),
+		CreatedAt: time.Now().Add(-6 * time.Minute),
+	}
+	store.files["192.168.1.1"]["newfile"] = &File{
+		ID:        "newfile",
+		Name:      "new.txt",
+		Data:      []byte("new"),
+		CreatedAt: time.Now(),
+	}
+
+	store.deletedExpired()
+
+	if store.Get("192.168.1.1", "oldfile") != nil {
+		t.Fatal("expected old file to be expired")
+	}
+	if store.Get("192.168.1.1", "newfile") == nil {
+		t.Fatal("expected new file to still exist")
 	}
 }

@@ -4,12 +4,20 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"sync"
+	"time"
 )
 
+// how often the store checks if any files expired
+const storeTick = 30 * time.Second
+
+// when a file expires and is deleted
+const fileTTL = 5 * time.Minute
+
 type File struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	Data []byte `json:"-"`
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	Data      []byte    `json:"-"`
+	CreatedAt time.Time `json:"-"`
 }
 
 type FileStore struct {
@@ -18,7 +26,33 @@ type FileStore struct {
 }
 
 func NewFileStore() *FileStore {
-	return &FileStore{files: make(map[string]map[string]*File)}
+	store := &FileStore{files: make(map[string]map[string]*File)}
+	go store.routinelyDeleteExpired()
+	return store
+}
+
+func (s *FileStore) routinelyDeleteExpired() {
+	ticker := time.NewTicker(storeTick)
+	for range ticker.C {
+		s.deletedExpired()
+	}
+}
+
+func (s *FileStore) deletedExpired() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	now := time.Now()
+	for ip, files := range s.files {
+		for id, file := range files {
+			if now.Sub(file.CreatedAt) > fileTTL {
+				delete(files, id)
+			}
+		}
+		if len(files) == 0 {
+			delete(s.files, ip)
+		}
+	}
 }
 
 func (s *FileStore) Add(ip, name string, data []byte) string {
@@ -32,7 +66,7 @@ func (s *FileStore) Add(ip, name string, data []byte) string {
 	if s.files[ip] == nil {
 		s.files[ip] = make(map[string]*File)
 	}
-	s.files[ip][fileID] = &File{ID: fileID, Name: name, Data: data}
+	s.files[ip][fileID] = &File{ID: fileID, Name: name, Data: data, CreatedAt: time.Now()}
 	return fileID
 }
 

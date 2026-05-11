@@ -38,8 +38,9 @@ VPN customers with the same exit node will encounter the same problem.
 
 **If you mean privacy from me:**
 
-Files are never written to disk. However, don't trust me with your incriminating
-evidence. As far as you know, this is a CIA operation targeting you.
+Files are never written to disk and are automatically deleted after 5 minutes.
+However, don't trust me with your incriminating evidence. As far as you know,
+this is a CIA operation targeting you.
 
 ## Is this illegal?
 

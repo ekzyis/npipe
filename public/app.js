@@ -102,6 +102,12 @@ function addFile(id, name) {
   document.getElementById("files").appendChild(div);
 }
 
+function removeFile(id) {
+  const card = document.querySelector(`.file[data-id="${id}"]`);
+  if (card) card.remove();
+  knownFiles.delete(id);
+}
+
 function downloadFile(id, name) {
   fetch("/file/" + id)
     .then((res) => res.blob())
@@ -118,6 +124,16 @@ function pollFiles() {
   fetch("/files")
     .then((res) => res.json())
     .then((files) => {
+      const serverIds = new Set(files.map((f) => f.id));
+
+      // remove expired files
+      for (const id of knownFiles) {
+        if (!serverIds.has(id)) {
+          removeFile(id);
+        }
+      }
+
+      // add new files
       files.forEach((f) => {
         if (!knownFiles.has(f.id)) {
           knownFiles.add(f.id);
