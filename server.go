@@ -20,6 +20,9 @@ var styleCSS string
 //go:embed public/app.js
 var appJS string
 
+//go:embed public/manifest.json
+var manifestJSON string
+
 var commit = getCommit()
 
 func getCommit() string {
@@ -64,6 +67,11 @@ func setupRoutes() {
 	http.HandleFunc("/app.js", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/javascript")
 		w.Write([]byte(appJS))
+	})
+
+	http.HandleFunc("/manifest.json", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/manifest+json")
+		w.Write([]byte(manifestJSON))
 	})
 
 	http.HandleFunc("/files", func(w http.ResponseWriter, r *http.Request) {

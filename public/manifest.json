@@ -1,0 +1,9 @@
+{
+  "name": "npipe",
+  "short_name": "npipe",
+  "description": "Share files on your network",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111",
+  "theme_color": "#111"
+}
