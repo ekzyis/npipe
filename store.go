@@ -56,7 +56,7 @@ func (s *FileStore) deletedExpired() {
 }
 
 func (s *FileStore) Add(ip, name string, data []byte) string {
-	id := make([]byte, 4)
+	id := make([]byte, 8)
 	rand.Read(id)
 	fileID := hex.EncodeToString(id)
 

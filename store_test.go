@@ -12,7 +12,7 @@ func TestAdd(t *testing.T) {
 	if id == "" {
 		t.Fatal("expected non-empty id")
 	}
-	if len(id) != 8 {
+	if len(id) != 16 {
 		t.Fatalf("expected 8 char hex id, got %s", id)
 	}
 }
