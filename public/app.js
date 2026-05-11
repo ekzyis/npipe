@@ -14,6 +14,11 @@ const icons = {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <polyline points="20 6 9 17 4 12"/>
     </svg>`,
+  error: `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="18" y1="6" x2="6" y2="18"/>
+      <line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>`,
   file: `
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -22,6 +27,17 @@ const icons = {
 };
 
 const knownFiles = new Set();
+
+const statusText = {
+  400: "Bad Request",
+  401: "Unauthorized",
+  403: "Forbidden",
+  404: "Not Found",
+  413: "Content Too Large",
+  500: "Internal Server Error",
+  502: "Bad Gateway",
+  503: "Service Unavailable"
+};
 
 function setupUpload() {
   document.getElementById("f").onchange = (e) => {
@@ -42,9 +58,9 @@ function setupUpload() {
         method: "POST",
         body: JSON.stringify({ name: file.name, data })
       }).then((res) => {
+        document.getElementById("f").value = "";
         if (res.ok) {
           pollFiles();
-          document.getElementById("f").value = "";
           label.innerHTML = `
             <span class="success">${icons.check}</span>
             <span class="success">uploaded</span>
@@ -52,6 +68,14 @@ function setupUpload() {
           setTimeout(() => {
             label.innerHTML = origHTML;
           }, 1000);
+        } else {
+          label.innerHTML = `
+            <span class="error">${icons.error}</span>
+            <span class="error">${statusText[res.status] || res.status}</span>
+          `;
+          setTimeout(() => {
+            label.innerHTML = origHTML;
+          }, 3000);
         }
       });
     };
