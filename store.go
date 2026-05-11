@@ -17,7 +17,8 @@ type File struct {
 	ID        string    `json:"id"`
 	Name      string    `json:"name"`
 	Data      []byte    `json:"-"`
-	CreatedAt time.Time `json:"-"`
+	CreatedAt time.Time `json:"createdAt"`
+	ExpiresAt time.Time `json:"expiresAt"`
 }
 
 type FileStore struct {
@@ -66,7 +67,8 @@ func (s *FileStore) Add(ip, name string, data []byte) string {
 	if s.files[ip] == nil {
 		s.files[ip] = make(map[string]*File)
 	}
-	s.files[ip][fileID] = &File{ID: fileID, Name: name, Data: data, CreatedAt: time.Now()}
+	now := time.Now()
+	s.files[ip][fileID] = &File{ID: fileID, Name: name, Data: data, CreatedAt: now, ExpiresAt: now.Add(fileTTL)}
 	return fileID
 }
 

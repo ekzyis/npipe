@@ -26,7 +26,7 @@ const icons = {
     </svg>`
 };
 
-const knownFiles = new Set();
+const knownFiles = new Map();
 
 const statusText = {
   400: "Bad Request",
@@ -46,49 +46,77 @@ function setupUpload() {
 
     reader.onload = () => {
       const data = Array.from(new Uint8Array(reader.result));
-      const label = document.querySelector("#upload label");
+      const upload = document.getElementById("upload");
+      const label = upload.querySelector("label");
       const input = document.getElementById("f");
       const origHTML = label.innerHTML;
 
       input.disabled = true;
+      upload.classList.add("uploading");
+      upload.style.setProperty("--progress", 0);
       label.innerHTML = `
         ${icons.spinner}
         <span>uploading</span>
       `;
 
-      fetch("/file", {
-        method: "POST",
-        body: JSON.stringify({ name: file.name, data })
-      }).then((res) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "/file");
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const progress = (e.loaded / e.total) * 100;
+          upload.style.setProperty("--progress", progress);
+        }
+      };
+
+      xhr.onload = () => {
         input.value = "";
-        if (res.ok) {
+        upload.classList.remove("uploading");
+        if (xhr.status >= 200 && xhr.status < 300) {
           pollFiles();
+          upload.classList.add("success");
           label.innerHTML = `
             <span class="success">${icons.check}</span>
             <span class="success">uploaded</span>
           `;
           setTimeout(() => {
+            upload.classList.remove("success");
             label.innerHTML = origHTML;
             input.disabled = false;
           }, 1000);
         } else {
           label.innerHTML = `
             <span class="error">${icons.error}</span>
-            <span class="error">${statusText[res.status] || res.status}</span>
+            <span class="error">${statusText[xhr.status] || xhr.status}</span>
           `;
           setTimeout(() => {
             label.innerHTML = origHTML;
             input.disabled = false;
           }, 3000);
         }
-      });
+      };
+
+      xhr.onerror = () => {
+        input.value = "";
+        upload.classList.remove("uploading");
+        label.innerHTML = `
+          <span class="error">${icons.error}</span>
+          <span class="error">network error</span>
+        `;
+        setTimeout(() => {
+          label.innerHTML = origHTML;
+          input.disabled = false;
+        }, 3000);
+      };
+
+      xhr.send(JSON.stringify({ name: file.name, data }));
     };
 
     reader.readAsArrayBuffer(file);
   };
 }
 
-function addFile(id, name) {
+function addFile(id, name, createdAt, expiresAt) {
   const div = document.createElement("div");
   div.className = "card file";
   div.dataset.id = id;
@@ -100,6 +128,17 @@ function addFile(id, name) {
     </a>
   `;
   document.getElementById("files").appendChild(div);
+  const created = new Date(createdAt).getTime();
+  const expires = new Date(expiresAt).getTime();
+  knownFiles.set(id, { created, expires });
+  setProgress(div, created, expires);
+}
+
+function setProgress(card, createdAt, expiresAt) {
+  const ttl = expiresAt - createdAt;
+  const remaining = Math.max(0, expiresAt - Date.now());
+  const progress = (remaining / ttl) * 100;
+  card.style.setProperty('--progress', progress);
 }
 
 function removeFile(id) {
@@ -127,17 +166,20 @@ function pollFiles() {
       const serverIds = new Set(files.map((f) => f.id));
 
       // remove expired files
-      for (const id of knownFiles) {
+      for (const id of knownFiles.keys()) {
         if (!serverIds.has(id)) {
           removeFile(id);
         }
       }
 
-      // add new files
+      // add new files and update progress
       files.forEach((f) => {
         if (!knownFiles.has(f.id)) {
-          knownFiles.add(f.id);
-          addFile(f.id, f.name);
+          addFile(f.id, f.name, f.createdAt, f.expiresAt);
+        } else {
+          const card = document.querySelector(`.file[data-id="${f.id}"]`);
+          const { created, expires } = knownFiles.get(f.id);
+          if (card) setProgress(card, created, expires);
         }
       });
     });
@@ -153,4 +195,4 @@ document.getElementById("files").onclick = (e) => {
 
 setupUpload();
 pollFiles();
-setInterval(pollFiles, 2000);
+setInterval(pollFiles, 1000);
