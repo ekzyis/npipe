@@ -1,11 +1,20 @@
+:root {
+  --bg: #131418;
+  --bg-card: #1e1f26;
+  --fg: #babdc4;
+  --link: #77a8fd;
+  --success: #4ade80;
+  --error: #f87171;
+}
+
 body {
   display: flex;
   flex-direction: column;
   align-items: center;
   min-height: 100vh;
   margin: 0;
-  background: #131418;
-  color: #babdc4;
+  background: var(--bg);
+  color: var(--fg);
   font-family: monospace;
 }
 
@@ -41,7 +50,7 @@ footer a {
 }
 
 footer a:hover {
-  color: #77a8fd;
+  color: var(--link);
 }
 
 #files {
@@ -62,13 +71,13 @@ footer a:hover {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background: #1e1f26;
+  background: var(--bg-card);
   border-radius: 8px;
   box-sizing: border-box;
 }
 
 .card a, .card label {
-  color: #babdc4;
+  color: var(--fg);
   text-decoration: none;
   cursor: pointer;
   display: flex;
@@ -100,11 +109,11 @@ footer a:hover {
 }
 
 .card .success {
-  color: #4ade80;
+  color: var(--success);
 }
 
 .card .error {
-  color: #f87171;
+  color: var(--error);
 }
 
 input[type="file"] {
