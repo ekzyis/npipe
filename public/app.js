@@ -47,8 +47,10 @@ function setupUpload() {
     reader.onload = () => {
       const data = Array.from(new Uint8Array(reader.result));
       const label = document.querySelector("#upload label");
+      const input = document.getElementById("f");
       const origHTML = label.innerHTML;
 
+      input.disabled = true;
       label.innerHTML = `
         ${icons.spinner}
         <span>uploading</span>
@@ -58,7 +60,7 @@ function setupUpload() {
         method: "POST",
         body: JSON.stringify({ name: file.name, data })
       }).then((res) => {
-        document.getElementById("f").value = "";
+        input.value = "";
         if (res.ok) {
           pollFiles();
           label.innerHTML = `
@@ -67,6 +69,7 @@ function setupUpload() {
           `;
           setTimeout(() => {
             label.innerHTML = origHTML;
+            input.disabled = false;
           }, 1000);
         } else {
           label.innerHTML = `
@@ -75,6 +78,7 @@ function setupUpload() {
           `;
           setTimeout(() => {
             label.innerHTML = origHTML;
+            input.disabled = false;
           }, 3000);
         }
       });
