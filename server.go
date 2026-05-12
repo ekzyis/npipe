@@ -125,6 +125,7 @@ func setupRoutes() {
 			return
 		}
 		w.Header().Set("Content-Type", "application/octet-stream")
+		w.Header().Set("Content-Length", fmt.Sprintf("%d", len(file.Data)))
 		w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, file.Name))
 		w.Write(file.Data)
 		log.Printf("%s downloaded %s (%d bytes)", ip, id, len(file.Data))

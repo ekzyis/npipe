@@ -142,6 +142,7 @@ input[type="file"] {
 }
 
 .file::before,
+.file.downloading::before,
 #upload.uploading::before,
 #upload.success::before {
   content: '';
@@ -176,4 +177,12 @@ input[type="file"] {
 
 #upload.success::before {
   background: var(--success);
+}
+
+.file.downloading::before {
+  background: conic-gradient(
+    from 0deg,
+    var(--fg-muted) calc(var(--progress, 0) * 1%),
+    transparent calc(var(--progress, 0) * 1%)
+  );
 }

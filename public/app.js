@@ -148,16 +148,38 @@ function removeFile(id) {
   knownFiles.delete(id);
 }
 
-function downloadFile(id, name) {
-  fetch("/file/" + id)
-    .then((res) => res.blob())
-    .then((blob) => {
-      const url = URL.createObjectURL(blob);
+function downloadFile(card, id, name) {
+  card.classList.add("downloading");
+  card.style.setProperty("--progress", 0);
+
+  const xhr = new XMLHttpRequest();
+  xhr.open("GET", "/file/" + id);
+  xhr.responseType = "blob";
+
+  xhr.onprogress = (e) => {
+    if (e.lengthComputable) {
+      const progress = (e.loaded / e.total) * 100;
+      console.log("downloading:", id, progress.toFixed(1) + "%");
+      card.style.setProperty("--progress", progress);
+    }
+  };
+
+  xhr.onload = () => {
+    card.classList.remove("downloading");
+    if (xhr.status >= 200 && xhr.status < 300) {
+      const url = URL.createObjectURL(xhr.response);
       const a = document.createElement("a");
       a.href = url;
       a.download = name;
       a.click();
-    });
+    }
+  };
+
+  xhr.onerror = () => {
+    card.classList.remove("downloading");
+  };
+
+  xhr.send();
 }
 
 function pollFiles() {
@@ -180,7 +202,7 @@ function pollFiles() {
         } else {
           const card = document.querySelector(`.file[data-id="${f.id}"]`);
           const { created, expires } = knownFiles.get(f.id);
-          if (card) setProgress(card, created, expires);
+          if (card && !card.classList.contains("downloading")) setProgress(card, created, expires);
         }
       });
     });
@@ -188,9 +210,9 @@ function pollFiles() {
 
 document.getElementById("files").onclick = (e) => {
   const card = e.target.closest(".file");
-  if (card) {
+  if (card && !card.classList.contains("downloading")) {
     e.preventDefault();
-    downloadFile(card.dataset.id, card.dataset.name);
+    downloadFile(card, card.dataset.id, card.dataset.name);
   }
 };
 
