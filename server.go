@@ -128,6 +128,7 @@ func setupRoutes() {
 		w.Header().Set("Content-Length", fmt.Sprintf("%d", len(file.Data)))
 		w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, file.Name))
 		w.Write(file.Data)
+		store.Delete(ip, id)
 		log.Printf("%s downloaded %s (%d bytes)", ip, id, len(file.Data))
 	})
 }
