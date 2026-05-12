@@ -21,20 +21,20 @@ they have the same source IP address as the uploader.
 I'd consider this abuse of NAT, and not how the internet should be used, but it
 works in most cases.
 
-## Is this safe?
+## Is this private?
 
 **If you mean privacy from others:**
 
-Not sure. A trusted reverse proxy makes sure that the source IP address is set
-based on the TCP connection. Attackers can spoof this address, but according to
-my knowledge, they will not receive the response.
+A little bit. A trusted reverse proxy makes sure that the source IP address is set
+based on the TCP connection. Attackers can spoof this address, but to my
+knowledge they won't receive the response.
 
 As far as I can tell, the biggest vulnerability here is CG-NAT. ISPs assign the
 same public IP address to multiple customers (with different ports). So if two
-customers with the same IP address happen to visit npipe.io, they will be able
+customers share the same IP address happen to visit npipe.io, they will be able
 to download each other's files.
 
-VPN customers with the same exit node will encounter the same problem.
+VPN users share the same exit node will encounter the same problem.
 
 **If you mean privacy from me:**
 
