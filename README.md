@@ -21,6 +21,8 @@ they have the same source IP address as the uploader.
 I'd consider this abuse of NAT, and not how the internet should be used, but it
 works in most cases.
 
+![](./xkcd-949.png)
+
 ## Is this private?
 
 **If you mean privacy from others:**

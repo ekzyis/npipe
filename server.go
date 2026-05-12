@@ -21,6 +21,9 @@ var styleCSS string
 //go:embed public/app.js
 var appJS string
 
+//go:embed public/webrtc.js
+var webrtcJS string
+
 //go:embed public/manifest.json
 var manifestJSON string
 
@@ -70,10 +73,17 @@ func setupRoutes() {
 		w.Write([]byte(appJS))
 	})
 
+	http.HandleFunc("/webrtc.js", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/javascript")
+		w.Write([]byte(webrtcJS))
+	})
+
 	http.HandleFunc("/manifest.json", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/manifest+json")
 		w.Write([]byte(manifestJSON))
 	})
+
+	http.HandleFunc("/ws", handleWebSocket)
 
 	http.HandleFunc("/files", func(w http.ResponseWriter, r *http.Request) {
 		ip := getClientIP(r)
