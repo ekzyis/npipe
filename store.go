@@ -3,9 +3,46 @@ package main
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"net"
 	"sync"
 	"time"
 )
+
+var (
+	private10  = mustParseCIDR("10.0.0.0/8")
+	private172 = mustParseCIDR("172.16.0.0/12")
+	private192 = mustParseCIDR("192.168.0.0/16")
+)
+
+func mustParseCIDR(s string) *net.IPNet {
+	_, n, err := net.ParseCIDR(s)
+	if err != nil {
+		panic(err)
+	}
+	return n
+}
+
+func isPrivateIP(ip net.IP) bool {
+	return private10.Contains(ip) || private172.Contains(ip) || private192.Contains(ip)
+}
+
+func toNetwork(ip net.IP) *net.IPNet {
+	switch {
+	case private10.Contains(ip):
+		return private10
+	case private172.Contains(ip):
+		return private172
+	case private192.Contains(ip):
+		return private192
+	default:
+		// Public IP: /32 for IPv4, /128 for IPv6
+		bits := 32
+		if ip.To4() == nil {
+			bits = 128
+		}
+		return &net.IPNet{IP: ip, Mask: net.CIDRMask(bits, bits)}
+	}
+}
 
 // how often the store checks if any files expired
 const storeTick = 30 * time.Second
@@ -23,7 +60,7 @@ type File struct {
 
 type FileStore struct {
 	mu    sync.RWMutex
-	files map[string]map[string]*File // ip -> id -> file
+	files map[string]map[string]*File // network CIDR -> id -> file
 }
 
 func NewFileStore() *FileStore {
@@ -56,7 +93,8 @@ func (s *FileStore) deletedExpired() {
 	}
 }
 
-func (s *FileStore) Add(ip, name string, data []byte) string {
+func (s *FileStore) Add(ip net.IP, name string, data []byte) string {
+	network := toNetwork(ip).String()
 	id := make([]byte, 8)
 	rand.Read(id)
 	fileID := hex.EncodeToString(id)
@@ -64,43 +102,46 @@ func (s *FileStore) Add(ip, name string, data []byte) string {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if s.files[ip] == nil {
-		s.files[ip] = make(map[string]*File)
+	if s.files[network] == nil {
+		s.files[network] = make(map[string]*File)
 	}
 	now := time.Now()
-	s.files[ip][fileID] = &File{ID: fileID, Name: name, Data: data, CreatedAt: now, ExpiresAt: now.Add(fileTTL)}
+	s.files[network][fileID] = &File{ID: fileID, Name: name, Data: data, CreatedAt: now, ExpiresAt: now.Add(fileTTL)}
 	return fileID
 }
 
-func (s *FileStore) List(ip string) []*File {
+func (s *FileStore) List(ip net.IP) []*File {
+	network := toNetwork(ip).String()
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	var files []*File
-	for _, f := range s.files[ip] {
+	for _, f := range s.files[network] {
 		files = append(files, f)
 	}
 	return files
 }
 
-func (s *FileStore) Get(ip, id string) *File {
+func (s *FileStore) Get(ip net.IP, id string) *File {
+	network := toNetwork(ip).String()
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	if s.files[ip] == nil {
+	if s.files[network] == nil {
 		return nil
 	}
-	return s.files[ip][id]
+	return s.files[network][id]
 }
 
-func (s *FileStore) Delete(ip, id string) bool {
+func (s *FileStore) Delete(ip net.IP, id string) bool {
+	network := toNetwork(ip).String()
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if s.files[ip] == nil {
+	if s.files[network] == nil {
 		return false
 	}
-	_, exists := s.files[ip][id]
-	delete(s.files[ip], id)
+	_, exists := s.files[network][id]
+	delete(s.files[network], id)
 	return exists
 }

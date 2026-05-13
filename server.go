@@ -34,19 +34,22 @@ func getCommit() string {
 	return strings.TrimSpace(string(out))
 }
 
-func getClientIP(r *http.Request) string {
-	if ip := r.Header.Get("X-Real-IP"); ip != "" {
-		return ip
+func getClientIP(r *http.Request) net.IP {
+	var ipStr string
+	if header := r.Header.Get("X-Real-IP"); header != "" {
+		ipStr = header
+	} else if header := r.Header.Get("X-Forwarded-For"); header != "" {
+		parts := strings.Split(header, ",")
+		ipStr = strings.TrimSpace(parts[0])
+	} else {
+		host, _, err := net.SplitHostPort(r.RemoteAddr)
+		if err != nil {
+			ipStr = r.RemoteAddr
+		} else {
+			ipStr = host
+		}
 	}
-	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		parts := strings.Split(xff, ",")
-		return strings.TrimSpace(parts[0])
-	}
-	host, _, err := net.SplitHostPort(r.RemoteAddr)
-	if err != nil {
-		return r.RemoteAddr
-	}
-	return host
+	return net.ParseIP(ipStr)
 }
 
 var store = NewFileStore()
@@ -54,9 +57,13 @@ var store = NewFileStore()
 func setupRoutes() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		ip := getClientIP(r)
-		html := strings.Replace(indexHTML, "__CLIENT_IP__", ip, 1)
+		network := toNetwork(ip).String()
+		if isPrivateIP(ip) {
+			network = network + " 🔒"
+		}
+		html := strings.Replace(indexHTML, "__CLIENT_NETWORK__", network, 1)
 		html = strings.ReplaceAll(html, "__COMMIT__", commit)
-		w.Header().Set("Content-Type", "text/html")
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Write([]byte(html))
 	})
 
