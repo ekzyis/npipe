@@ -16,7 +16,7 @@ echo "deploying commit $COMMIT"
 
 set -x
 
-cd /home/ekzyis/npipe
+cd npipe
 git fetch
 git switch --detach "$COMMIT"
 go build -o npipe

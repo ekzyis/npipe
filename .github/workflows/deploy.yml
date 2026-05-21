@@ -21,4 +21,4 @@ jobs:
           echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
 
       - name: Deploy
-        run: ssh ekzyis@npipe.io -p "${{ secrets.SSH_PORT }}" "${{ github.sha }}"
+        run: ssh npipe@npipe.io -p "${{ secrets.SSH_PORT }}" "${{ github.sha }}"
