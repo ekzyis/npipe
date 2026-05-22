@@ -11,34 +11,38 @@ https://npipe.io/
 
 Share files between devices on the same network.
 
-## How this works
+## Why?
 
-Devices behind the same router share a public IP address
-([NAT](https://en.wikipedia.org/wiki/Network_address_translation)). The server
-uses this to enable file sharing between them: devices can download files when
-they have the same source IP address as the uploader.
+Because it's the year 2026, the future is here with computers creating art, but
+I still used Signal to share files between devices next to each other. So I had
+futuristic technology build me something simple. It was my first time trying out
+Claude, and I think it did pretty well!
 
-I'd consider this abuse of NAT, and not how the internet should be used, but it
-works in most cases.
+## How?
 
-## Is this private?
+The server puts clients into different subnets per [RFC
+1918](https://www.rfc-editor.org/rfc/rfc1918.html):
 
-**If you mean privacy from others:**
+* 10.0.0.0/8
+* 172.16.0.0/12
+* 192.168.0.0/16
 
-A little bit. A trusted reverse proxy makes sure that the source IP address is set
-based on the TCP connection. Attackers can spoof this address, but to my
-knowledge they won't receive the response.
+Clients can download files when they connect from the same subnet as the
+uploader.
 
-As far as I can tell, the biggest vulnerability here is CG-NAT. ISPs assign the
-same public IP address to multiple customers (with different ports). So if two
-customers share the same IP address and happen to visit npipe.io, they will be
-able to download each other's files.
+A trusted reverse proxy makes sure that the source IP address is set based on
+the TCP connection. Attackers can spoof this address, but to my knowledge they
+won't receive the response.
 
-VPN users sharing the same exit node will encounter the same problem.
+/32 (IPv4) or /128 (IPv6) is used for clients that connect with a public IP
+address. The server assumes that they own their IP address. However, CG-NAT
+breaks that assumption: ISPs assign the same public IP address to multiple
+customers. The same happens for VPN users sharing exit nodes.
 
-**If you mean privacy from me:**
+This makes using my hosted instance, https://npipe.io/, pretty bad for privacy
+from other users, without even considering privacy from whoever runs the server
+(me), so I don't recommend actually using it, but hosting it yourself.
 
-Files are never written to disk and are automatically deleted after 5 minutes.
-However, don't trust me with your incriminating evidence. As far as you know,
-this is a CIA operation targeting you.
+---
 
+<sub>inspired by [ncat --broker](https://man.archlinux.org/man/ncat.1.en)</sub>
