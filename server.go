@@ -24,9 +24,14 @@ var appJS string
 //go:embed public/manifest.json
 var manifestJSON string
 
+var buildCommit string
+
 var commit = getCommit()
 
 func getCommit() string {
+	if buildCommit != "" {
+		return buildCommit
+	}
 	out, err := exec.Command("git", "rev-parse", "--short", "HEAD").Output()
 	if err != nil {
 		return "dev"
