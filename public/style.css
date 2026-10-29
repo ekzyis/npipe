@@ -63,6 +63,10 @@ footer .public {
   color: var(--warning);
 }
 
+#desc {
+  margin: 1rem 0rem 2rem 0rem;
+}
+
 #files {
   display: grid;
   grid-template-columns: repeat(auto-fit, 100px);
