@@ -58,10 +58,13 @@ func setupRoutes() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		ip := getClientIP(r)
 		network := toNetwork(ip).String()
+		networkClass := "public"
 		if isPrivateIP(ip) {
 			network = network + " 🔒"
+			networkClass = "private"
 		}
 		html := strings.Replace(indexHTML, "__CLIENT_NETWORK__", network, 1)
+		html = strings.Replace(html, "__NETWORK_CLASS__", networkClass, 1)
 		html = strings.ReplaceAll(html, "__COMMIT__", commit)
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Write([]byte(html))

@@ -6,6 +6,7 @@
   --link: #77a8fd;
   --success: #4ade80;
   --error: #f87171;
+  --warning: #fbbf24;
 }
 
 body {
@@ -52,6 +53,14 @@ footer a {
 
 footer a:hover {
   color: var(--link);
+}
+
+footer .private {
+  color: var(--success);
+}
+
+footer .public {
+  color: var(--warning);
 }
 
 #files {
