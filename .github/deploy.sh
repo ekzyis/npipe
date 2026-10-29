@@ -19,6 +19,8 @@ set -x
 cd npipe
 git fetch
 git switch --detach "$COMMIT"
-go build -o npipe
+# nix build will delete symlinks but not regular files
+rm -f npipe
+nix build
 tmux kill-session -t npipe || true
-tmux new-session -d -s npipe './npipe 3333'
+tmux new-session -d -s npipe './result/bin/npipe 3333'
