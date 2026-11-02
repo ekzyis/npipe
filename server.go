@@ -152,5 +152,5 @@ func runServer(port string) {
 	setupRoutes()
 	fmt.Printf("npipe running on port %s\n", port)
 	fmt.Println("Press Ctrl+C to stop")
-	http.ListenAndServe(":"+port, nil)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
